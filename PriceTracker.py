@@ -13,7 +13,7 @@ from pushbullet import PushBullet
 
 class Notify:
     def __init__(self, title, link):
-        self.__api = ""
+        self.__api = "o.QePE6YS2mH8bMDdLz9gmMUSRDwTb1JRI"
         self.__title = title
         self.__link = link
         self.pb = PushBullet(self.__api)
@@ -55,17 +55,21 @@ class Item(Notify):
     def get_price(self):
 
         price = None
+        attempts = 3
 
-        while price is None:
+        while price is None and attempts > 0:
+
             page = requests.get(self.item_link)
             tree = html.fromstring(page.content)
             original = tree.xpath('{}/text()'.format(self.__xpaths["xpath"]))
             sale = tree.xpath('{}/text()'.format(self.__xpaths["xpath_sale"]))
 
+            attempts -= 1
+
             if original or sale:
                 price = original or sale
             else:
-                time.sleep(2)
+                time.sleep(5)
 
         return float(sub(r'[^0-9.]', '', price[0]))
 
