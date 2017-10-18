@@ -13,7 +13,7 @@ from pushbullet import PushBullet
 
 class Notify:
     def __init__(self, title, link):
-        self.__api = "o.QePE6YS2mH8bMDdLz9gmMUSRDwTb1JRI"
+        self.__api = "Push Bullet API KEY"
         self.__title = title
         self.__link = link
         self.pb = PushBullet(self.__api)
