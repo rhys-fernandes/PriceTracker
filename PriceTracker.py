@@ -9,11 +9,12 @@ import pyexcel as pe
 import requests
 from lxml import html
 from pushbullet import PushBullet
+# from fake_useragent import UserAgent
 
-
+# Used for PushBullet Notification
 class Notify:
     def __init__(self, title, link):
-        self.__api = "Push Bullet API KEY"
+        self.__api = "PushBullet Key Here"
         self.__title = title
         self.__link = link
         self.pb = PushBullet(self.__api)
@@ -55,9 +56,13 @@ class Item(Notify):
     def get_price(self):
 
         price = None
+        # ua = UserAgent()
         attempts = 3
+        # print(ua.random)
 
-        while price is None and attempts > 0:
+        while (price is None) and (attempts > 0):
+
+            # header = {'User-Agent': str(ua.random)}
 
             page = requests.get(self.item_link)
             tree = html.fromstring(page.content)
@@ -102,7 +107,6 @@ class Item(Notify):
 
 
 def main():
-
     def multi_create(i):
 
         return Item(i["ITEM NAME"],
@@ -110,7 +114,7 @@ def main():
                     i["WEBSITE"].lower(),
                     i["DESIRED PRICE"])
 
-    def multi_call(i):
+    def multi_exe(i):
         try:
             i.price_check()
             i.export_data()
@@ -129,8 +133,7 @@ def main():
     with concurrent.futures.ThreadPoolExecutor() as exe:
         item_instances = exe.map(multi_create, filtered_records)
         print("Instances Created: {:.2f}".format(time.time() - start))
-        exe.map(multi_call, item_instances)
-
+        exe.map(multi_exe, item_instances)
 
     print("End: {:.2f} seconds".format(time.time() - start))
 
