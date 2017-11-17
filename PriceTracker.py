@@ -14,7 +14,7 @@ from pushbullet import PushBullet
 # Used for PushBullet Notification
 class Notify:
     def __init__(self, title, link):
-        self.__api = "PushBullet Key Here"
+        self.__api = ""
         self.__title = title
         self.__link = link
         self.pb = PushBullet(self.__api)
@@ -24,20 +24,25 @@ class Notify:
 
 
 class Item(Notify):
+
+    # class variable to hold price data of all items (exported as json)
     price_data = {}
 
     def __init__(self, item_name, item_link, website, price_limit):
 
+        # for pushbullet notifications
         super().__init__(item_name, item_link)
 
         self.item_name = item_name
         self.item_link = item_link
         self.price_limit = float(price_limit)
 
+        # xpath retrieved form database depending on website
         self.__query = self.get_xpath(website)
         self.__xpaths = {"xpath": self.__query[0],
                          "xpath_sale": self.__query[1], }
 
+        # old data is read into price_data, new item are added if not in data
         with open('Price_Data.json', 'r+') as file:
             Item.price_data = json.load(file)
             if self.item_name not in Item.price_data:
@@ -54,6 +59,12 @@ class Item(Notify):
         return "{self.__class__.__name__}({self.item_name}, {self.price_limit})".format(self=self)
 
     def get_price(self):
+        """
+        attempts to retrieve the price of an item, given 3 tries
+        5 sec delay with each attempt
+
+        :return: Item price (float)
+        """
 
         price = None
         # ua = UserAgent()
@@ -79,6 +90,10 @@ class Item(Notify):
         return float(sub(r'[^0-9.]', '', price[0]))
 
     def price_check(self):
+        """
+        compares the retrieved get_price to the desired price
+        :return: pushbullet notification is sent if lower or equal to
+        """
         current_price = self.get_price()
 
         if (current_price <= self.price_limit) \
@@ -87,6 +102,10 @@ class Item(Notify):
             self.push(message="Item on sale at £{}".format(current_price))
 
     def export_data(self):
+        """
+        function updates the json file with up to date data
+        :return: write to json file
+        """
         d = datetime.today().strftime('%Y-%m-%d-%H-%M')
 
         with open("Price_Data.json", "r+") as file:
@@ -98,6 +117,11 @@ class Item(Notify):
 
     @staticmethod
     def get_xpath(_):
+        """
+        used to get correct xpath for an item given the website
+        :param _: Item website (lowercase)
+        :return: xpath (string)
+        """
         conn = sqlite3.connect("xpath_data")
 
         with conn:
