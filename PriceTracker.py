@@ -9,7 +9,8 @@ import pyexcel as pe
 import requests
 from lxml import html
 from pushbullet import PushBullet
-# from fake_useragent import UserAgent
+from fake_useragent import UserAgent
+
 
 # Used for PushBullet Notification
 class Notify:
@@ -67,18 +68,18 @@ class Item(Notify):
         """
 
         price = None
-        # ua = UserAgent()
-        attempts = 3
-        # print(ua.random)
+        ua = UserAgent()
+        attempts = 1
 
         while (price is None) and (attempts > 0):
 
-            # header = {'User-Agent': str(ua.random)}
+            header = {'User-Agent': str(ua.random)}
 
-            page = requests.get(self.item_link)
+            page = requests.get(self.item_link, headers=header)
+
             tree = html.fromstring(page.content)
-            original = tree.xpath('{}/text()'.format(self.__xpaths["xpath"]))
-            sale = tree.xpath('{}/text()'.format(self.__xpaths["xpath_sale"]))
+            original = tree.xpath('{}'.format(self.__xpaths["xpath"]))
+            sale = tree.xpath('{}'.format(self.__xpaths["xpath_sale"]))
 
             attempts -= 1
 
@@ -142,7 +143,7 @@ def main():
         try:
             i.price_check()
             i.export_data()
-            print("Task complete: {}".format(i))
+            print("Task complete: {}".format(i.item_name))
 
         except ValueError as e:
             print("Error with {}, {}".format(i.item_name, e))
